@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block 'main' %}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-5 mx-auto shadow p-3">
+            <!-- Display messages -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show"
+                role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <h3 style="text-align: center;">User Register</h3>
+                <div class="mb-3">
+                    <label for="input4" class="form-label">User Name</label>
+                    <input type="text" class="form-control" id="input4" name="uname">
+                </div>
+                <div class="mb-3">
+                    <label for="input1" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="input1" name="uemail" aria-describedby="emailHelp">
+                </div>
+                <div class="mb-3">
+                    <label for="input2" class="form-label">Password</label>
+                    <input type="password" class="form-control" name="upass" id="input2">
+                </div>
+                <div class="mb-3">
+                    <label for="input3" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" name="ucpass" id="input3">
+                </div>
+
+                <button type="submit" class="btn btn-danger">Register</button>
+                &nbsp; &nbsp;&nbsp; Already User.? &nbsp; <a href="/login">Login</a>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock 'main' %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block 'main' %}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-5 mx-auto shadow p-3">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show"
+                            role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <h3 style="text-align: center;">User Login</h3>
+
+                <div class="mb-3">
+                    <label for="input4" class="form-label">User Name</label>
+                    <input type="text" name="uname" class="form-control" id="input4" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="input2" class="form-label">Password</label>
+                    <input type="password" name="upass" class="form-control" id="input2" required>
+                </div>
+
+
+                <button type="submit" class="btn btn-danger">Login</button>
+                &nbsp; &nbsp;&nbsp; New User? &nbsp; <a href="/register">Register</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock 'main' %}
