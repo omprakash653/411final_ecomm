@@ -6,9 +6,7 @@ from django.db import IntegrityError, DatabaseError
 from django.contrib import messages
 from django.shortcuts import redirect
 from .models import Contact
-from django.contrib import messages
-from django.core.mail import send_mail, EmailMessage
-from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 import re
 from django.contrib.auth.models import User
 # Create your views here.
@@ -57,7 +55,8 @@ class ContactView(View):
 
         return render(request, self.template_name)  
 
-
+import re
+from django.contrib.auth.models import User
 def register(request):
     if request.method == "POST":
         try:
@@ -106,5 +105,26 @@ def register(request):
 
     return render(request, "register.html")
 
-def login(request):
-    return render(request, 'login.html')
+def user_login(request):
+    if request.method == "POST":
+        uname = request.POST.get('uname').strip()
+        upass = request.POST.get('upass').strip()
+
+        user = authenticate(username=uname, password=upass)
+        if user:
+            login(request, user)
+            messages.success(request, "Login successful!")
+            return redirect("/")
+        else:
+            messages.error(request, "Invalid credentials! Please try again.")
+            return redirect("login")
+
+    return render(request, "login.html")
+
+def user_logout(request):
+    logout(request)
+    messages.success(request, "You have been logged out successfully.")
+    return redirect("login")
+
+def forgot_password(request):
+    return render(request, "forgot_password.html")
