@@ -8,6 +8,11 @@ from django.shortcuts import redirect
 from .models import Contact
 from django.contrib.auth import authenticate, login, logout
 import re
+from django.core.mail import send_mail
+from django.conf import settings
+import random
+from django.utils.timezone import now
+
 from django.contrib.auth.models import User
 # Create your views here.
 def home(request):
@@ -126,5 +131,61 @@ def user_logout(request):
     messages.success(request, "You have been logged out successfully.")
     return redirect("login")
 
+otp_storage = {}
 def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        try:
+            user = User.objects.get(email=email)
+            otp = random.randint(100000, 999999)
+            otp_storage[email] = {"otp": otp, "time": now()}  # Save OTP & timestamp
+
+            # Send OTP via email
+            subject = "Password Reset OTP - Shopping Kart"
+            message = f"""
+            Hello {user.username},
+
+            You requested a password reset. Use the OTP below to proceed:
+            
+            🔢 Your OTP: {otp}
+
+            This OTP is valid for 10 minutes.
+
+            If you didn't request this, please ignore this email.
+
+            Regards,
+            Shopping Kart Team
+            """
+            send_mail(subject, message, settings.EMAIL_HOST_USER, [email], fail_silently=False)
+
+            messages.success(request, "OTP has been sent to your email.")
+            return redirect("verify_otp")
+
+        except User.DoesNotExist:
+            messages.error(request, "Email not registered!")
+            return redirect("forgot_password")
+
     return render(request, "forgot_password.html")
+
+
+def verify_otp(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        otp_entered = request.POST.get("otp")
+
+        if email in otp_storage:
+            otp_data = otp_storage[email]
+            otp_correct = otp_data["otp"]
+
+            if str(otp_entered) == str(otp_correct):
+                messages.success(request, "OTP verified! Set a new password.")
+                return redirect("/")
+            else:
+                messages.error(request, "Invalid OTP! Please try again.")
+                return redirect("verify_otp")
+        else:
+            messages.error(request, "OTP expired or invalid.")
+            return redirect("forgot_password")
+
+    return render(request, "verify_otp.html")
