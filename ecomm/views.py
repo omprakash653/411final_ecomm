@@ -235,3 +235,9 @@ def product(request):
     print(p)  # Check if the queryset is returning products
     context = {'data': p}
     return render(request, "product.html", context)
+
+def product_detail(request,pid):
+    p=Product.objects.filter(id=pid)
+    # print(p)
+    context = {'data': p}
+    return render(request,'product_details.html',context)

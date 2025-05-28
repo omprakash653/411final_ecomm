@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block 'main' %}
+<div class="row mt-4 p-3"><!--main section start or 2nd row start-->
+    <div class="col-md-9 mx-auto">
+        
+        {% for i in data %}
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{i.pimage.url}}" alt=".." height="250px" width="80%" >
+            </div><!--image section-->
+            <div class="col-md-6">
+                {% if success %}
+                <div class="alert alert-success" role="alert">
+                    {{success}}
+                </div>
+                {% endif %}
+                
+                {% if errmsg %}
+                        <div class="alert alert-danger" role="alert">
+                            {{errmsg}}
+                        </div>
+                    {% endif %}
+
+                <p><strong>Product Name:</strong>{{i.name}}</p>
+                {% if i.cat == 1 %}
+                    <p><strong>Category:</strong>Mobile</p>
+                {% elif i.cat == 2 %}
+                    <p><strong>Category:</strong>Shoes</p>
+                {% else %}
+                    <p><strong>Category:</strong>Cloth</p>
+                {% endif %}
+                <p><strong>Product Detail:</strong>{{i.pdetails}}</p>
+                <p><strong>Price:</strong>Rs.{{i.price}}</p>
+                <p>
+                    <a href="/addtocart/{{i.id}}"><button class="btn btn-danger">Add to Cart</button></a>
+                    <a href="/cart"><button class="btn btn-danger">View Cart</button></a>
+                    <a href="/product"><button class="btn btn-danger">Shop More</button></a>
+                </p>
+            </div><!--detail section-->
+        </div>
+        {% endfor %}
+    </div>
+
+</div><!--main section end or 2nd row end-->
+{% endblock 'main' %}
