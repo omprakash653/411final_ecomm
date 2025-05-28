@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.db import IntegrityError, DatabaseError
 from django.contrib import messages
 from django.shortcuts import redirect
-from .models import Contact
+from .models import Contact,Product
 from django.contrib.auth import authenticate, login, logout
 import re
 from django.core.mail import send_mail
@@ -110,10 +110,11 @@ def register(request):
 
     return render(request, "register.html")
 
+@csrf_protect  # This ensures CSRF protection is explicitly applied (optional if middleware is enabled)
 def user_login(request):
     if request.method == "POST":
-        uname = request.POST.get('uname').strip()
-        upass = request.POST.get('upass').strip()
+        uname = request.POST.get('uname', '').strip()
+        upass = request.POST.get('upass', '').strip()
 
         user = authenticate(username=uname, password=upass)
         if user:
@@ -180,7 +181,7 @@ def verify_otp(request):
 
             if str(otp_entered) == str(otp_correct):
                 messages.success(request, "OTP verified! Set a new password.")
-                return redirect("/")
+                return redirect("reset_password")
             else:
                 messages.error(request, "Invalid OTP! Please try again.")
                 return redirect("verify_otp")
@@ -189,3 +190,48 @@ def verify_otp(request):
             return redirect("forgot_password")
 
     return render(request, "verify_otp.html")
+
+def reset_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        new_password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match!")
+            return redirect("reset_password")
+
+        if len(new_password) < 6 or not any(char.isdigit() for char in new_password) or not any(char.isalpha() for char in new_password):
+            messages.error(request, "Password must be at least 6 characters long and contain both letters and numbers.")
+            return redirect("reset_password")
+
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+
+            # Clear OTP after successful reset
+            otp_storage.pop(email, None)
+
+            messages.success(request, "Password reset successful! You can log in now.")
+            return redirect("login")
+
+        except User.DoesNotExist:
+            messages.error(request, "Error resetting password. Please try again.")
+
+    return render(request, "reset_password.html")
+
+
+
+# def product(request):
+#     p=Product.objects.filter(is_active=True)
+#     # print(p)
+#     context={}
+#     context['data']=p
+#     return render(request, "product.html")
+
+def product(request):
+    p = Product.objects.filter(is_active=True)
+    print(p)  # Check if the queryset is returning products
+    context = {'data': p}
+    return render(request, "product.html", context)

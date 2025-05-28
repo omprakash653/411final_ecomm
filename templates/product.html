@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block 'main' %}
+
+<div class="row mt-4 p-3">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <h5 class="fw-bold">Filter By Category</h5>
+        <hr>
+        <ul class="list-group">
+            <li class="list-group-item {% if request.path == '/product' %}active{% endif %}">
+                <a href="/product" class="text-decoration-none text-dark d-block">All</a>
+            </li>
+            <li class="list-group-item {% if request.path == '/catfilter/1' %}active{% endif %}">
+                <a href="/catfilter/1" class="text-decoration-none text-dark d-block">Mobile</a>
+            </li>
+            <li class="list-group-item {% if request.path == '/catfilter/2' %}active{% endif %}">
+                <a href="/catfilter/2" class="text-decoration-none text-dark d-block">Shoes</a>
+            </li>
+            <li class="list-group-item {% if request.path == '/catfilter/3' %}active{% endif %}">
+                <a href="/catfilter/3" class="text-decoration-none text-dark d-block">Cloth</a>
+            </li>
+        </ul>
+
+        <br>
+        <h5 class="fw-bold">Filter By Price</h5>
+        <hr>
+        <form action="/pricefilter" method="get" class="border p-3 rounded bg-light">
+            <div class="mb-2">
+                <label for="input1" class="form-label fw-semibold">Min Price</label>
+                <input type="number" name="min" class="form-control" id="input1" placeholder="e.g. 500">
+            </div>
+            <div class="mb-2">
+                <label for="input2" class="form-label fw-semibold">Max Price</label>
+                <input type="number" name="max" class="form-control" id="input2" placeholder="e.g. 5000">
+            </div>
+            <button class="btn btn-danger w-100">Find</button>
+        </form>
+
+        <br>
+        <h5 class="fw-bold">Sort By Price</h5>
+        <hr>
+        <ul class="list-group">
+            <li class="list-group-item {% if request.path == '/sortfilter/1' %}active{% endif %}">
+                <a href="/sortfilter/1" class="text-decoration-none text-dark d-block">High to Low</a>
+            </li>
+            <li class="list-group-item {% if request.path == '/sortfilter/0' %}active{% endif %}">
+                <a href="/sortfilter/0" class="text-decoration-none text-dark d-block">Low to High</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Product List Section -->
+    <div class="col-md-9">
+        {% if errmsg %}
+            <div class="alert alert-danger text-center" role="alert">
+                {{ errmsg }}
+            </div>
+        {% endif %}
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for i in data %}
+                <div class="col">
+                    <div class="card shadow-sm border-0 rounded-3 hover-effect">
+                        <img src="{{ i.pimage.url }}" class="card-img-top" alt="Product Image" height="180px">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ i.name }}</h5>
+                            <p class="card-text text-success fw-bold">Rs. {{ i.price }}</p>
+                            <a href="/product_detail/{{ i.id }}" class="btn btn-primary w-100">See Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if not data %}
+            <div class="text-center mt-4">
+                <h5 class="text-muted">No products found.</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+{% endblock 'main' %}
