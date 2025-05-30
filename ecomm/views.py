@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.db import IntegrityError, DatabaseError
 from django.contrib import messages
 from django.shortcuts import redirect
-from .models import Contact,Product
+from .models import Contact,Product,Cart,Order
 from django.contrib.auth import authenticate, login, logout
 import re
 from django.core.mail import send_mail
@@ -60,6 +60,8 @@ class ContactView(View):
 
         return render(request, self.template_name)  
 
+
+###########################################################user
 import re
 from django.contrib.auth.models import User
 def register(request):
@@ -133,6 +135,8 @@ def user_logout(request):
     return redirect("login")
 
 otp_storage = {}
+
+######################################### reset password functionality
 def forgot_password(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -230,6 +234,8 @@ def reset_password(request):
 #     context['data']=p
 #     return render(request, "product.html")
 
+
+####################################################### product views
 def product(request):
     p = Product.objects.filter(is_active=True)
     print(p)  # Check if the queryset is returning products
@@ -241,3 +247,127 @@ def product_detail(request,pid):
     # print(p)
     context = {'data': p}
     return render(request,'product_details.html',context)
+
+
+
+###################################### Filters for products
+from django.db.models import Q
+
+def catfilter(request, cv):
+    # print(cv)
+    q1 = Q(category=cv)  
+    q2 = Q(is_active=True)
+
+    p = Product.objects.filter(q1 & q2)
+    # print(p)
+    context = {'data': p}
+    return render(request, 'product.html', context)
+
+
+def sortfilter(request,sv):
+    # print(sv,type(sv))
+    if sv=='1':
+        # p=Product.objects.order_by('-price')
+        # context['data']=p
+        t=('-price')
+    else:
+        # p=Product.objects.order_by('price')
+        # context['data']=p
+        t=('price')
+    
+    p=Product.objects.order_by(t).filter(is_active=True)
+    # print(p)
+    context = {'data': p}
+    return render(request,'product.html',context)
+
+def pricefilter(request):
+    mn=request.GET['min']
+    mx=request.GET['max']
+
+    # print(mn)
+    # print(mx)
+    q1=Q(price__gte= mn)
+    q2=Q(price__lte= mx)
+    q3=Q(is_active=True)
+
+    p=Product.objects.filter(q1 &q2&q3)
+    # print(p)
+    context = {'data': p}
+    return render(request,'product.html',context)
+
+def srcfilter(request):
+    s = request.GET.get('search', '').strip() 
+    pname=Product.objects.filter(name__icontains=s)
+    pdet=Product.objects.filter(pdetails__icontains=s)
+    alldata=pname.union(pdet)
+    # print(alldata)
+    context={}
+    if alldata.count()==0:
+        context['errmsg']='Product Not Found'
+    
+    context['data']=alldata
+    return render(request,'product.html',context)
+
+
+
+###################### add to cart functionality
+def add_to_cart(request, pid):
+    if request.user.is_authenticated:
+        user = request.user
+        product = Product.objects.get(id=pid)
+
+        cart_item, created = Cart.objects.get_or_create(uid=user, pid=product)
+
+        if not created:
+            messages.error(request, "Product already in cart.")
+        else:
+            messages.success(request, "Product added successfully!")
+
+        return redirect("cart")
+
+    return redirect("login")
+
+def cart(request):
+    user_cart = Cart.objects.filter(uid=request.user.id)
+    total_price = sum(item.pid.price * item.qty for item in user_cart)
+
+    return render(request, "cart.html", {"data": user_cart, "total": total_price, "n": len(user_cart)})
+
+
+def updateqty(request,x,cid):
+    c=Cart.objects.filter(id=cid)
+    # print(c[0].qty)
+    q=c[0].qty
+    if x=='1':
+        q=q+1
+    elif q>1: 
+        q=q-1
+
+    c.update(qty=q)
+    return redirect('/cart')
+
+def remove(request,cid):
+    c=Cart.objects.filter(id=cid)
+    c.delete()
+    return redirect('/cart')
+
+
+def placeorder(request):
+    c=Cart.objects.filter(uid=request.user.id)
+    for i in c:
+        a=i.pid.price*i.qty
+        o=Order.objects.create(uid=i.uid,pid=i.pid,qty=i.qty,amt=a)
+        o.save()
+        i.delete()
+    return redirect('/fetchorder')
+    
+def fetchorder(request):
+    o=Order.objects.filter(uid=request.user.id)
+    context={}
+    s=0
+    for i in o:
+        s=s+i.amt
+    context['data']=o
+    context['total']=s
+    context['n']=len(o)
+    return render(request,'placeorder.html',context)
