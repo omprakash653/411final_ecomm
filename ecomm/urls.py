@@ -32,4 +32,7 @@ urlpatterns = [
     path("remove/<int:cid>/", views.remove, name="remove"),
     path("placeorder/", views.placeorder, name="placeorder"),
     path("fetchorder/", views.fetchorder, name="fetchorder"),
+
+    path("makepayment/", views.makepayment, name="makepayment"),
+    path("paymentsuccess/", views.paymentsuccess, name="payment-success"),
 ]

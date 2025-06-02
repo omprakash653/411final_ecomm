@@ -134,3 +134,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True #transfer security level 
 EMAIL_HOST_USER = 'yadavop97018@gmail.com'  # Your email
 EMAIL_HOST_PASSWORD = 'faag rtlv tijp folu'  # Your email password
+
+razor_pay_key_id='rzp_test_0cZOKkv2JT3kMN'
+key_secret='2JknC0N7GWmm1I9Lj4R908AB'

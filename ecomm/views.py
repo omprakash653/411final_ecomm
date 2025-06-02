@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import random
 from django.utils.timezone import now
+import razorpay
 
 from django.contrib.auth.models import User
 # Create your views here.
@@ -371,3 +372,17 @@ def fetchorder(request):
     context['total']=s
     context['n']=len(o)
     return render(request,'placeorder.html',context)
+
+
+##################
+def makepayment(request):
+    client = razorpay.Client(auth=("rzp_test_0cZOKkv2JT3kMN", "2JknC0N7GWmm1I9Lj4R908AB"))
+    total_amount = sum(order.amt for order in Order.objects.filter(uid=request.user.id))
+    
+    payment = client.order.create({"amount": total_amount * 100, "currency": "INR", "receipt": "order_rcptid_11"})
+    return render(request, "pay.html", {"payment": payment})
+
+def paymentsuccess(request):
+    total_amount = sum(order.amt for order in Order.objects.filter(uid=request.user.id))
+    return render(request, "paymentsuccess.html", {"total_amount": total_amount})
+
